@@ -16,7 +16,7 @@ import pojo.AddPlace;
 import pojo.Location;
 
 public class Sd {
-	
+	// this is raw class which converted to framework
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 	

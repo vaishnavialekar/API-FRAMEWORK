@@ -3,6 +3,7 @@ package stepdefinations;
 import static io.restassured.RestAssured.given;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import io.cucumber.java.en.And;
@@ -27,23 +28,38 @@ public class StepDefination extends utils {
 	ResponseSpecification resspec;
 	RequestSpecification res;
 	AddPlaceResponse response;
+	AddPlace responses;
 	String status;
+	String placeid;
 	TestDataBuild data = new TestDataBuild();
-	
+
 	@Given("Add Place Payload with {string} {string} {int}")
 	public void add_place_payload_with(String name, String language, int Accuracy) throws IOException {
 
-
-			
 		res = given().spec(requestSpecification()).body(data.AddplaceData(Accuracy, name, language));
 
 	}
 
-	@When("user calls {string} with POST http request")
-	public void usercallsAddPlaceAPIwithPOSThttprequest(String AddPlaceAPI) {
+	@When("user calls {string} with {string} http request")
+	public void usercallsAddPlaceAPIwithPOSThttprequest(String AddPlaceAPI, String method) {
+
 		resspec = new ResponseSpecBuilder().expectStatusCode(200).expectContentType(ContentType.JSON).build();
-		response = res.when().post("/maps/api/place/add/json").then().spec(resspec).extract().response()
-				.as(AddPlaceResponse.class);
+		if(method.equalsIgnoreCase("POST")) {
+			 response =res.when().post("/maps/api/place/add/json").then().spec(resspec).extract().response();
+			else if(method.equalsIgnoreCase("GET"))
+				 response =res.when().get(resourceAPI.getResource());
+			
+		
+		
+
+		else {
+
+			if (method.equalsIgnoreCase("GET")) {
+				responses = res.when().get("/maps/api/place/get/json").then().spec(resspec).extract().response()
+						.as(AddPlace.class);
+
+			}
+		}
 
 	}
 
@@ -59,35 +75,25 @@ public class StepDefination extends utils {
 		System.out.println(yes);
 
 	}
-	
+
 	@And("{string} in API is {string}")
-	public void scopeinapiisapp(String status, String app) {
-		
-		String scope = response.getScope();
-		System.out.println(scope.contentEquals("APP"));
-		
+	public void scopeinapiisapp(String Expectedscope, String app) {
+
+		String ActualScope = response.getScope();
+		System.out.println(ActualScope.contentEquals("APP"));
+		//assert actual scope with expectedScope
+
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+	@And("verify place ID CREATED {string} in {string}")
+	public void verifyplaceIDCREATED(String ExpectedName, String resource) throws IOException {
+
+		placeid = response.getPlace_id();
+		res = given().spec(requestSpecification()).queryParam("place_id", placeid);
+		usercallsAddPlaceAPIwithPOSThttprequest(resource, "get");
+		
+		
+
+	}
+
 }
